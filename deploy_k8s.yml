@@ -1,0 +1,98 @@
+---
+- hosts:
+    all
+
+  vars_files:
+    - vars.yml
+
+  become_user: root
+  become_method: sudo
+  become: yes
+
+  roles:
+    - docker
+
+  tasks:
+    - name: Disable SELinux
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Provide K8s repository
+      yum_repository:
+        name: kubernetes
+        description: Kubernetes EL7 repository
+        baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        gpgkey:
+          - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+          - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        enabled: yes
+        gpgcheck: yes
+
+    - name: Install K8s components
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Start Kubelet
+      service:
+        name: kubelet
+        enabled: yes
+        state: started
+
+    - name: Set bridge-nf-call
+      sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: 1
+        state: present
+        ignoreerrors: yes
+        sysctl_file: /etc/sysctl.d/k8s.conf
+
+- hosts:
+    k8sm
+
+  become_user: root
+  become_method: sudo
+  become: yes
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: CNI - directory
+      file:
+        path: /opt/cni/bin
+        state: directory
+
+    - name: CNI - get package
+      get_url:
+        url: https://github.com/containernetworking/plugins/releases/download/{{CNI_VERSION}}/cni-plugins-amd64-{{CNI_VERSION}}.tgz
+        dest: /tmp/cni-plugins-amd64-{{CNI_VERSION}}.tgz
+
+    - name: CNI - extract
+      unarchive:
+        src: /tmp/cni-plugins-amd64-{{CNI_VERSION}}.tgz
+        dest: /opt/cni/bin/
+        remote_src: yes
+        creates: /opt/cni/bin/bridge
+
+    - name: CRICTL - directory
+      file:
+        path: /opt/bin
+        state: directory
+
+    - name: CRICTL - get package
+      get_url:
+        url: https://github.com/kubernetes-incubator/cri-tools/releases/download/{{CRICTL_VERSION}}/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
+        dest: /tmp/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
+
+    - name: CRICTL - extract
+      unarchive:
+        src: /tmp/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
+        dest: /opt/bin/
+        remote_src: yes
+        creates: /opt/bin/crictl
