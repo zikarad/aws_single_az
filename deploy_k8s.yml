@@ -17,6 +17,15 @@
       selinux:
         policy: targeted
         state: permissive
+      register: selinux
+    
+    - name: Need reboot
+      command: "shutdown -r now"
+      when: selinux.changed
+
+    - name: Wake up
+      command: "echo \"SELinux changed\""
+      when: selinux.changed
 
     - name: Provide K8s repository
       yum_repository:
@@ -96,3 +105,29 @@
         dest: /opt/bin/
         remote_src: yes
         creates: /opt/bin/crictl
+
+    - name: K8s init
+      command: kubeadm init
+
+- hosts:
+    k8sm
+
+  become: no
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Create folder
+      file:
+        path: ${HOME}/.kube
+        state: directory
+
+    - name: Copy config
+      copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: ${HOME}/.kube/config
+
+    - name: Weave Net
+      command: kubectl apply -f http://git.io/weave-kube

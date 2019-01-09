@@ -46,10 +46,6 @@ resource "aws_security_group" "sg-host" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
-
   tags {
     Name = "sg-host"
   }
@@ -76,8 +72,8 @@ resource "aws_route53_record" "arecord" {
 	count = "${var.hostcount}"
 
 	zone_id = "${data.aws_route53_zone.r53zone.zone_id}"
-    name    = "host-${count.index+1}"
-    type    = "A"
+  name    = "host-${count.index+1}"
+  type    = "A"
 	ttl     = 300
 	records = ["${element(aws_instance.vm-host.*.public_ip, count.index)}"]
 }
