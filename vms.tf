@@ -52,30 +52,43 @@ resource "aws_security_group" "sg-host" {
 }
 
 resource "aws_instance" "vm-host" {
-	count = "${var.hostcount}"
+  count         = "${var.hostcount}"
 
-	ami						= "${var.ami}"
-	instance_type = "${var.host-size}"
+  ami           = "${var.ami}"
+  instance_type = "${var.host-size}"
 
-	subnet_id			= "${aws_subnet.sn-pub.id}"
-	vpc_security_group_ids = ["${aws_security_group.sg-host.id}"]
-	key_name      = "${aws_key_pair.sshkey-gen.key_name}"
-	associate_public_ip_address = true
+  root_block_device {
+    volume_size = 10
+    delete_on_termination = true
+  }
 
-	tags {
-		Name  = "host-${count.index+1}"
-		stage = "${var.stage}"
-	}
+  subnet_id              = "${aws_subnet.sn-pub.id}"
+  vpc_security_group_ids = ["${aws_security_group.sg-host.id}"]
+  key_name               = "${aws_key_pair.sshkey-gen.key_name}"
+  associate_public_ip_address = true
+
+  tags {
+    Name  = "host-${count.index+1}"
+	  stage = "${var.stage}"
+  }
 }
 
-resource "aws_route53_record" "arecord" {
-	count = "${var.hostcount}"
-
-	zone_id = "${data.aws_route53_zone.r53zone.zone_id}"
+resource "aws_route53_record" "arecord-pub" {
+  count   = "${var.hostcount}"
+  zone_id = "${data.aws_route53_zone.r53zone.zone_id}"
   name    = "host-${count.index+1}"
   type    = "A"
-	ttl     = 300
-	records = ["${element(aws_instance.vm-host.*.public_ip, count.index)}"]
+  ttl     = 300
+  records = ["${element(aws_instance.vm-host.*.public_ip, count.index)}"]
+}
+
+resource "aws_route53_record" "arecord-priv" {
+  count   = "${var.hostcount}"
+  zone_id = "${data.aws_route53_zone.r53zone.zone_id}"
+  name    = "${element(aws_instance.vm-host.*.private_dns, count.index)}"
+  type    = "A"
+  ttl     = 300
+  records = ["${element(aws_instance.vm-host.*.private_ip, count.index)}"]
 }
 
 /* OUTPUT IP */

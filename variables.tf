@@ -1,7 +1,6 @@
 variable "domain_name" { default = "radekzika.cloud" }
 
-variable "prefix" { default = "proj2" }
-
+variable "prefix" { default = "single-az" }
 variable "stage" { default = "poc"}
 
 variable "subnets" {

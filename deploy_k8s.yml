@@ -3,7 +3,7 @@
     all
 
   vars_files:
-    - vars.yml
+    - k8s_components.yml
 
   become_user: root
   become_method: sudo
@@ -18,7 +18,7 @@
         policy: targeted
         state: permissive
       register: selinux
-    
+
     - name: Need reboot
       command: "shutdown -r now"
       when: selinux.changed
@@ -42,7 +42,7 @@
       yum:
         name: "{{ item }}"
         state: present
-      with_items:
+      loop:
         - kubelet
         - kubeadm
         - kubectl
@@ -124,10 +124,24 @@
         state: directory
 
     - name: Copy config
+      become: yes
       copy:
         remote_src: yes
         src: /etc/kubernetes/admin.conf
-        dest: ${HOME}/.kube/config
+        dest: /home/centos/.kube/config
 
-    - name: Weave Net
-      command: kubectl apply -f http://git.io/weave-kube
+    - name: fix permissions
+      become: yes
+      file:
+        path: /home/centos/.kube
+        group: centos
+        owner: centos
+        recurse: yes
+
+    - name: Get Kubectl version
+      command: "kubectl version | base64 | tr -d '\n'kubectl version | base64 | tr -d '\n'"
+      register: kubectl_version
+
+    - name: Weave Net install
+      become: yes
+      command: "kubectl apply -f \"https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version }}\""
