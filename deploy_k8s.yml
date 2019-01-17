@@ -69,7 +69,7 @@
   become: yes
 
   vars_files:
-    - vars.yml
+    - k8s_components.yml
 
   tasks:
     - name: CNI - directory
@@ -96,7 +96,7 @@
 
     - name: CRICTL - get package
       get_url:
-        url: https://github.com/kubernetes-incubator/cri-tools/releases/download/{{CRICTL_VERSION}}/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
+        url: https://github.com/kubernetes-sigs/cri-tools/releases/download/{{CRICTL_VERSION}}/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
         dest: /tmp/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
 
     - name: CRICTL - extract
@@ -108,6 +108,9 @@
 
     - name: K8s init
       command: kubeadm init
+      args:
+        creates: /etc/kubernetes/admin.conf
+      register: kubeadminit
 
 - hosts:
     k8sm
@@ -115,15 +118,16 @@
   become: no
 
   vars_files:
-    - vars.yml
+    - k8s_components.yml
 
   tasks:
-    - name: Create folder
+    - name: Create kube folder
       file:
         path: ${HOME}/.kube
         state: directory
+      when: kubeadminit.changed
 
-    - name: Copy config
+    - name: Copy kube config
       become: yes
       copy:
         remote_src: yes
@@ -139,9 +143,14 @@
         recurse: yes
 
     - name: Get Kubectl version
-      command: "kubectl version | base64 | tr -d '\n'kubectl version | base64 | tr -d '\n'"
+      become: no
+      shell: |
+              kubectl version | base64 -w0
       register: kubectl_version
 
+      #    - name: DEBUG Kubectl version
+      # command: echo "{{ kubectl_version }}"
     - name: Weave Net install
-      become: yes
-      command: "kubectl apply -f \"https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version }}\""
+      become: no
+      shell: |
+              kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version.stdout }}"

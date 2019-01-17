@@ -12,3 +12,6 @@
         - telnet
         - git
         - wget
+        - bind-utils
+        - strace
+        - psmisc
