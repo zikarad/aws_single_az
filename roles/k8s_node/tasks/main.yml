@@ -1,0 +1,47 @@
+- name: Disable SELinux
+  selinux:
+    policy: targeted
+    state: permissive
+  register: selinux
+
+- name: Need reboot
+  command: "shutdown -r now"
+  when: selinux.changed
+
+- name: Wake up
+  command: "echo \"SELinux changed\""
+  when: selinux.changed
+
+- name: Provide K8s repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes EL7 repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    enabled: yes
+    gpgcheck: yes
+
+- name: Install K8s components
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Start Kubelet
+  service:
+    name: kubelet
+    enabled: yes
+    state: started
+
+- name: Set bridge-nf-call
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    state: present
+    ignoreerrors: yes
+    sysctl_file: /etc/sysctl.d/k8s.conf
