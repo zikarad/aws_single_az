@@ -6,13 +6,13 @@ data "aws_route53_zone" "r53zone" {
 
 /* MANAGE RESOURCES */
 resource "aws_key_pair" "sshkey-gen" {
-	key_name   = "${var.sshkey_name}"
-	public_key = "${file("${var.sshkey_path}")}"
+  key_name   = "${var.sshkey_name}"
+  public_key = "${file("${var.sshkey_path}")}"
 }
 
 resource "aws_security_group" "sg-host" {
-	name   = "ssh access"
-	description = "Allow ssh access from any"
+  name   = "ssh access"
+  description = "Allow ssh access from any"
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   ingress {
