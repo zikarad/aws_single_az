@@ -43,6 +43,7 @@ resource "aws_subnet" "sn-pub" {
   tags {
     Name  = "${var.prefix}-public1"
     stage = "${var.stage}"
+    creator = "Terraform"
   }
 }
 
@@ -53,6 +54,7 @@ resource "aws_internet_gateway" "igw-main" {
   tags {
     Name  = "igw-${var.prefix}"
     stage = "${var.stage}"
+    creator = "Terraform"
   }
 }
 
@@ -67,6 +69,8 @@ resource "aws_route_table" "rt-pub" {
 
   tags {
     Name = "${var.prefix}-custom"
+    stage = "${var.stage}"
+    creator = "Terraform"
   }
 }
 
