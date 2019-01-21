@@ -38,7 +38,7 @@ resource "aws_subnet" "sn-pub" {
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   cidr_block        = "${var.subnets[count.index]}"
-  availability_zone = "eu-central-1a"
+  availability_zone = "${var.region}${var.zone}"
 
   tags {
     Name  = "${var.prefix}-public1"

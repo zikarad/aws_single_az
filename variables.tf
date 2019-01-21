@@ -15,11 +15,12 @@ variable "clname" {
 
 /* AWS */
 variable "ami" {
-# EU-CENTRAL-1 => CentOS 7
-default = "ami-0a84197c3325910a9"
+  # EU-CENTRAL-1 => CentOS 7
+  default = "ami-0a84197c3325910a9"
 }
 
 variable "region" { default = "eu-central-1" }
+variable "zone"   { default = "a" }
 
 variable "sshkey_path" {}
 variable "aws_access_key" {}
