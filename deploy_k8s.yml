@@ -1,7 +1,6 @@
 ---
-# COnfigure generic node
-- hosts:
-    all
+### Configure generic [ ALL ] nodes
+- hosts: all
 
   vars_files:
     - k8s_components.yml
@@ -14,9 +13,8 @@
     - docker
     - k8s_node
 
-# Configure K8s master node
-- hosts:
-    k8sm
+#### Configure K8s master node - root part I
+- hosts: k8sm
 
   become_user: root
   become_method: sudo
@@ -67,9 +65,8 @@
       register: kubeadminit
 
       
-
-- hosts:
-    k8sm
+### Master node - non-privileged
+- hosts: k8sm
 
   become: no
 
@@ -81,7 +78,6 @@
       file:
         path: ${HOME}/.kube
         state: directory
-      when: kubeadminit.changed
 
     - name: Copy kube config
       become: yes
@@ -108,3 +104,21 @@
       become: no
       shell: |
               kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version.stdout }}"
+      when: kubectl_version.changed
+
+### Master node - root part II
+- hosts: k8sm
+
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  tasks:
+    - name: Create join token
+      shell: |
+              kubeadm token create --print-join-command
+      register: join_command
+
+    - name: Print join command
+      command: "wall {{ join_command.stdout }}"
+      when: join_command.changed
