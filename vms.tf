@@ -29,15 +29,15 @@ resource "aws_security_group" "sg-host" {
     to_port     = 6443
     protocol    =  "tcp"
     cidr_blocks = ["10.0.1.0/24"]
-	}
+  }
 
-ingress {
+  ingress {
 	description = "alt-HTTPS"
     from_port   = 6783
     to_port     = 6783
     protocol    =  "tcp"
     cidr_blocks = ["10.0.1.0/24"]
-	}
+  }
 
   ingress {
 	description = "alt-HTTPS"
@@ -45,7 +45,7 @@ ingress {
     to_port     = 6783
     protocol    =  "udp"
     cidr_blocks = ["10.0.1.0/24"]
-	}
+  }
 
   ingress {
 	description = "alt-HTTPS"
@@ -53,7 +53,7 @@ ingress {
     to_port     = 6784
     protocol    =  "udp"
     cidr_blocks = ["10.0.1.0/24"]
-	}
+  }
 
   ingress {
 	description = "kubelet-api"
@@ -61,7 +61,7 @@ ingress {
     to_port     = 10250
     protocol    =  "tcp"
     cidr_blocks = ["10.0.1.0/24"]
-	}
+  }
 
   egress {
     from_port   = 0
