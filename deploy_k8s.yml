@@ -120,5 +120,5 @@
       register: join_command
 
     - name: Print join command
-      command: "wall {{ join_command.stdout }}"
+      command: "wall '{{ join_command.stdout }}'"
       when: join_command.changed
