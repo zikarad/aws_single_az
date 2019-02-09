@@ -38,11 +38,12 @@ resource "aws_subnet" "sn-pub" {
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   cidr_block        = "${var.subnets[count.index]}"
-  availability_zone = "eu-central-1a"
+  availability_zone = "${var.region}${var.zone}"
 
   tags {
     Name  = "${var.prefix}-public1"
     stage = "${var.stage}"
+    creator = "Terraform"
   }
 }
 
@@ -53,6 +54,7 @@ resource "aws_internet_gateway" "igw-main" {
   tags {
     Name  = "igw-${var.prefix}"
     stage = "${var.stage}"
+    creator = "Terraform"
   }
 }
 
@@ -67,6 +69,8 @@ resource "aws_route_table" "rt-pub" {
 
   tags {
     Name = "${var.prefix}-custom"
+    stage = "${var.stage}"
+    creator = "Terraform"
   }
 }
 

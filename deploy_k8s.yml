@@ -1,9 +1,9 @@
 ---
-- hosts:
-    all
+### Configure generic [ ALL ] nodes
+- hosts: all
 
   vars_files:
-    - vars.yml
+    - k8s_components.yml
 
   become_user: root
   become_method: sudo
@@ -11,65 +11,17 @@
 
   roles:
     - docker
+    - k8s_node
 
-  tasks:
-    - name: Disable SELinux
-      selinux:
-        policy: targeted
-        state: permissive
-      register: selinux
-    
-    - name: Need reboot
-      command: "shutdown -r now"
-      when: selinux.changed
-
-    - name: Wake up
-      command: "echo \"SELinux changed\""
-      when: selinux.changed
-
-    - name: Provide K8s repository
-      yum_repository:
-        name: kubernetes
-        description: Kubernetes EL7 repository
-        baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-        gpgkey:
-          - https://packages.cloud.google.com/yum/doc/yum-key.gpg
-          - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-        enabled: yes
-        gpgcheck: yes
-
-    - name: Install K8s components
-      yum:
-        name: "{{ item }}"
-        state: present
-      with_items:
-        - kubelet
-        - kubeadm
-        - kubectl
-
-    - name: Start Kubelet
-      service:
-        name: kubelet
-        enabled: yes
-        state: started
-
-    - name: Set bridge-nf-call
-      sysctl:
-        name: net.bridge.bridge-nf-call-iptables
-        value: 1
-        state: present
-        ignoreerrors: yes
-        sysctl_file: /etc/sysctl.d/k8s.conf
-
-- hosts:
-    k8sm
+#### Configure K8s master node - root part I
+- hosts: k8sm
 
   become_user: root
   become_method: sudo
   become: yes
 
   vars_files:
-    - vars.yml
+    - k8s_components.yml
 
   tasks:
     - name: CNI - directory
@@ -96,7 +48,7 @@
 
     - name: CRICTL - get package
       get_url:
-        url: https://github.com/kubernetes-incubator/cri-tools/releases/download/{{CRICTL_VERSION}}/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
+        url: https://github.com/kubernetes-sigs/cri-tools/releases/download/{{CRICTL_VERSION}}/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
         dest: /tmp/crictl-{{CRICTL_VERSION}}-linux-amd64.tar.gz
 
     - name: CRICTL - extract
@@ -108,26 +60,65 @@
 
     - name: K8s init
       command: kubeadm init
+      args:
+        creates: /etc/kubernetes/admin.conf
+      register: kubeadminit
 
-- hosts:
-    k8sm
+      
+### Master node - non-privileged
+- hosts: k8sm
 
   become: no
 
   vars_files:
-    - vars.yml
+    - k8s_components.yml
 
   tasks:
-    - name: Create folder
+    - name: Create kube folder
       file:
         path: ${HOME}/.kube
         state: directory
 
-    - name: Copy config
+    - name: Copy kube config
+      become: yes
       copy:
         remote_src: yes
         src: /etc/kubernetes/admin.conf
-        dest: ${HOME}/.kube/config
+        dest: /home/centos/.kube/config
 
-    - name: Weave Net
-      command: kubectl apply -f http://git.io/weave-kube
+    - name: fix permissions
+      become: yes
+      file:
+        path: /home/centos/.kube
+        group: centos
+        owner: centos
+        recurse: yes
+
+    - name: Get Kubectl version
+      become: no
+      shell: |
+              kubectl version | base64 -w0
+      register: kubectl_version
+
+    - name: Weave Net install
+      become: no
+      shell: |
+              kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version.stdout }}"
+      when: kubectl_version.changed
+
+### Master node - root part II
+- hosts: k8sm
+
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  tasks:
+    - name: Create join token
+      shell: |
+              kubeadm token create --print-join-command
+      register: join_command
+
+    - name: Print join command
+      command: "wall '{{ join_command.stdout }}'"
+      when: join_command.changed

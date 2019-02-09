@@ -18,7 +18,7 @@
 
 - name: Install DockerCE
   yum:
-    name: docker-ce
+    name: docker-ce-{{DOCKER_VERSION}}
     state: present
 
 - name: Start Docker
