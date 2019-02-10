@@ -82,16 +82,16 @@ resource "aws_route53_record" "arecord-pub" {
   name    = "host-${count.index+1}"
   type    = "A"
   ttl     = 300
-  records = ["${element(aws_instance.vm-host.*.public_ip, count.index)}"]
+  records = ["${element(aws_spot_instance_request.vm-host.*.public_ip, count.index)}"]
 }
 
 resource "aws_route53_record" "arecord-priv" {
   count   = "${var.hostcount}"
   zone_id = "${data.aws_route53_zone.r53zone.zone_id}"
-  name    = "${element(aws_instance.vm-host.*.private_dns, count.index)}"
+  name    = "${element(aws_spot_instance_request.vm-host.*.private_dns, count.index)}"
   type    = "A"
   ttl     = 300
-  records = ["${element(aws_instance.vm-host.*.private_ip, count.index)}"]
+  records = ["${element(aws_spot_instance_request.vm-host.*.private_ip, count.index)}"]
 }
 
 resource "aws_acm_certificate" "cert" {
@@ -119,5 +119,5 @@ resource "aws_acm_certificate_validation" "cert_val" {
 
 /* OUTPUT IP */
 output "public_ip" {
-	value = ["${aws_instance.vm-host.*.public_ip}"]
+	value = ["${aws_spot_instance_request.vm-host.*.public_ip}"]
 }
