@@ -27,7 +27,8 @@ variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "route53zone" {}
 
-variable "host-size" { default = "t3.medium" }
+variable "host-size"  { default = "t3.medium" }
+variable "spot-price" { default = "0.03" }
 
 variable "hostcount" { default = 1 }
 

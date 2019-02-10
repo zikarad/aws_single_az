@@ -51,8 +51,11 @@ resource "aws_security_group" "sg-host" {
   }
 }
 
-resource "aws_instance" "vm-host" {
+resource "aws_spot_instance_request" "vm-host" {
   count         = "${var.hostcount}"
+
+  spot_price          = "${var.spot-price}"
+  wait_for_fulfillment = true
 
   ami           = "${var.ami}"
   instance_type = "${var.host-size}"
