@@ -14,6 +14,12 @@ resource "aws_vpc" "vpc-main" {
 resource "aws_vpc_dhcp_options" "dhcpopts" {
   domain_name         = "${var.domain_name}"
   domain_name_servers = ["AmazonProvidedDNS"]
+
+  tags {
+    Name    = "${var.prefix}"
+    stage   = "${var.stage}"
+    creator = "Terraform"
+  }
 }
 
 resource "aws_vpc_dhcp_options_association" "dhcpopts-assoc" {
