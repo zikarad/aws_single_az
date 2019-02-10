@@ -29,6 +29,6 @@ variable "route53zone" {}
 
 variable "host-size" { default = "t3.medium" }
 
-variable "hostcount" { default = 3 }
+variable "hostcount" { default = 1 }
 
 variable "sshkey_name" { default = "aws_gen" }
