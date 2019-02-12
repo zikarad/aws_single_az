@@ -72,8 +72,27 @@ resource "aws_spot_instance_request" "vm-host" {
 
   tags {
     Name  = "host-${count.index+1}"
-	  stage = "${var.stage}"
+    stage = "${var.stage}"
   }
+}
+
+resource "aws_iam_policy" "s3-policy" {
+  name    = "s3-bucket-rw"
+  path    = "/"
+  description = "Bucket for read/write operation dedicated to host"
+
+  policy = <<ENDOFPOLICY
+{
+  "Version": "2012-10-07",
+  "Statement": [
+      {
+        "Action": ["s3:GetObject", "s3:PutObject"],
+        "Effect": "Allow",
+        "Resource": ["arn:aws:s3:::${var.s3-bucket-name}/*"]
+      }
+   ]
+}
+ENDOFPOLICY
 }
 
 resource "aws_route53_record" "arecord-pub" {
