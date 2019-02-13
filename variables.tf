@@ -26,6 +26,10 @@ variable "sshkey_path" {}
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "route53zone" {}
+variable "s3-bucket-name" {
+  description = "Common bucket for the project"
+  default     = "single-az-project"
+}
 
 variable "host-size"  { default = "t3.medium" }
 variable "spot-price" { default = "0.03" }
