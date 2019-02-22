@@ -66,7 +66,7 @@ resource "aws_spot_instance_request" "vm-host" {
   instance_type = "${var.host-size}"
 
   root_block_device {
-    volume_size = 10
+    volume_size = "${var.root-block-size}"
     delete_on_termination = true
   }
 

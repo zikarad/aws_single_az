@@ -30,6 +30,7 @@ variable "s3-bucket-name" {
 
 variable "host-size"       { default = "t3.medium" }
 variable "spot-price"      { default = "0.03" }
+variable "root-block-size" { default = "10" }
 variable "cwlog-retention" { default = "7" }
 
 variable "hostcount"   { default = 1 }
