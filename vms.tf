@@ -10,8 +10,8 @@ resource "aws_key_pair" "sshkey-gen" {
   public_key = "${file("${var.sshkey_path}")}"
 }
 
-resource "aws_iam_instance_profile" "s3-rw-single_bucket" {
-  name = "ec2-s3-single_bucket"
+resource "aws_iam_instance_profile" "ec2-profile" {
+  name = "ec2-custom"
   role = "${aws_iam_role.iamr-ec2.name}"
 }
 
@@ -74,7 +74,7 @@ resource "aws_spot_instance_request" "vm-host" {
   vpc_security_group_ids = ["${aws_security_group.sg-host.id}"]
   key_name               = "${aws_key_pair.sshkey-gen.key_name}"
   associate_public_ip_address = true
-  iam_instance_profile   = "${aws_iam_instance_profile.s3-rw-single_bucket.name}"
+  iam_instance_profile   = "${aws_iam_instance_profile.ec2-profile.name}"
 
   tags {
     Name  = "host-${count.index+1}"
