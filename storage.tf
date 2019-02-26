@@ -15,29 +15,8 @@ resource "aws_iam_policy" "s3-policy" {
 
 }
 
-resource "aws_iam_role" "ec2-s3-single_bucket" {
-  name  = "ec2-s3-single_bucket"
-
-  assume_role_policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-POLICY
-
-}
-
 resource "aws_iam_role_policy_attachment" "ec2-s3-single_bucket-attach" {
-  role       = "${aws_iam_role.ec2-s3-single_bucket.name}"
+  role       = "${aws_iam_role.iamr-ec2.name}"
   policy_arn = "${aws_iam_policy.s3-policy.arn}"
 }
 

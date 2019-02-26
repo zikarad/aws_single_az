@@ -43,7 +43,7 @@ resource "aws_subnet" "sn-pub" {
   count = 1
   vpc_id = "${aws_vpc.vpc-main.id}"
 
-  cidr_block        = "${cidrsubnet(var.vpc_cidr, 8 , count.index+1)}"
+  cidr_block        = "${cidrsubnet(var.vpc_cidr, 8 , count.index)}"
   availability_zone = "${var.region}${var.zone}"
 
   tags {

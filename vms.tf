@@ -12,7 +12,7 @@ resource "aws_key_pair" "sshkey-gen" {
 
 resource "aws_iam_instance_profile" "s3-rw-single_bucket" {
   name = "ec2-s3-single_bucket"
-  role = "${aws_iam_role.ec2-s3-single_bucket.name}"
+  role = "${aws_iam_role.iamr-ec2.name}"
 }
 
 resource "aws_security_group" "sg-host" {
@@ -59,8 +59,8 @@ resource "aws_security_group" "sg-host" {
 resource "aws_spot_instance_request" "vm-host" {
   count         = "${var.hostcount}"
 
-  spot_price          = "${var.spot-price}"
-  wait_for_fulfillment = true
+  spot_price    = "${var.spot-price}"
+  wait_for_fulfillment   = true
 
   ami           = "${var.ami}"
   instance_type = "${var.host-size}"
