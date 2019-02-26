@@ -1,5 +1,5 @@
 data "aws_iam_policy" "cwlog-policy" {
-  arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "ec2-cwlogs" {
