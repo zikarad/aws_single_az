@@ -38,6 +38,30 @@ resource "aws_vpc_endpoint_route_table_association" "vpcea-s3" {
   route_table_id  = "${aws_route_table.rt-pub.id}"
 }
 
+resource "aws_vpc_endpoint" "vpce-logs" {
+  vpc_id       = "${aws_vpc.vpc-main.id}"
+  service_name = "com.amazonaws.${var.region}.logs"
+  vpc_endpoint_type = "Interface"
+
+  subnet_ids          = ["${aws_subnet.sn-pub.*.id}"]
+  private_dns_enabled = false
+
+  security_group_ids = [
+    "${aws_security_group.sg-vpce.id}"
+  ]
+}
+
+resource "aws_security_group" "sg-vpce" {
+
+  name = "SG for VPCE traffic"
+
+  tags {
+    Name  = "${var.prefix}-public1"
+    stage = "${var.stage}"
+    creator = "Terraform"
+  }
+}
+
 /* NETWORKS */
 resource "aws_subnet" "sn-pub" {
   count = 1
