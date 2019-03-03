@@ -6,6 +6,7 @@ resource "aws_vpc" "vpc-main" {
 
   tags {
     Name    = "${var.prefix}"
+    project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
   }
@@ -17,6 +18,7 @@ resource "aws_vpc_dhcp_options" "dhcpopts" {
 
   tags {
     Name    = "${var.prefix}"
+    project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
   }
@@ -40,15 +42,16 @@ resource "aws_vpc_endpoint_route_table_association" "vpcea-s3" {
 
 /* NETWORKS */
 resource "aws_subnet" "sn-pub" {
-  count = 1
+  count  = 1
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   cidr_block        = "${cidrsubnet(var.vpc_cidr, 8 , count.index)}"
   availability_zone = "${var.region}${var.zone}"
 
   tags {
-    Name  = "${var.prefix}-public1"
-    stage = "${var.stage}"
+    Name    = "${var.prefix}-public1"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
     creator = "Terraform"
   }
 }
@@ -58,8 +61,9 @@ resource "aws_internet_gateway" "igw-main" {
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   tags {
-    Name  = "igw-${var.prefix}"
-    stage = "${var.stage}"
+    Name    = "igw-${var.prefix}"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
     creator = "Terraform"
   }
 }
@@ -74,8 +78,9 @@ resource "aws_route_table" "rt-pub" {
   }
 
   tags {
-    Name = "${var.prefix}-custom"
-    stage = "${var.stage}"
+    Name    = "${var.prefix}-custom"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
     creator = "Terraform"
   }
 }

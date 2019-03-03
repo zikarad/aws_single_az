@@ -53,6 +53,8 @@ resource "aws_security_group" "sg-host" {
 
   tags {
     Name = "sg-host"
+    project = "${var.prefix}"
+    creator = "Terraform"
   }
 }
 
@@ -78,6 +80,8 @@ resource "aws_spot_instance_request" "vm-host" {
 
   tags {
     Name  = "host-${count.index+1}"
+    project = "${var.prefix}"
+    creator = "Terraform"
     stage = "${var.stage}"
   }
 }

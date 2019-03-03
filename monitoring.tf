@@ -8,16 +8,17 @@ resource "aws_iam_role_policy_attachment" "ec2-cwlogs" {
 }
 
 resource "aws_cloudwatch_log_group" "cwlog" {
-  name   = "${var.prefix}"
+  name              = "${var.prefix}"
   retention_in_days = "${var.cwlog-retention}"
 
   tags {
-    Name  = "${var.prefix}"
-    value = "${var.stage}"
+    Name    = "${var.prefix}"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
   }
 }
 
 resource "aws_cloudwatch_log_stream" "cwlog-stream" {
-  name = "generic-log"
+  name           = "generic-log"
   log_group_name = "${aws_cloudwatch_log_group.cwlog.name}"
 }
