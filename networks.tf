@@ -49,7 +49,7 @@ resource "aws_subnet" "sn-pub" {
   availability_zone = "${var.region}${var.zone}"
 
   tags {
-    Name    = "${var.prefix}-public1"
+    Name    = "${var.prefix}-public-${count.index}"
     project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
