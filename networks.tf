@@ -108,7 +108,7 @@ resource "aws_internet_gateway" "igw-main" {
 }
 
 resource "aws_eip" "eip-ngw" {
-  count = "${var.az_count}"
+  count = 1
   vpc = true
   depends_on = ["aws_internet_gateway.igw-main"]
 }
@@ -125,8 +125,6 @@ resource "aws_nat_gateway" "ngw-priv" {
     creator = "Terraform"
   }
 }
-
-resource "" "" {}
 
 /* ROUTE TABLEs */
 resource "aws_route_table" "rt-pub" {
