@@ -35,9 +35,15 @@ resource "aws_vpc_endpoint" "vpce-s3" {
   service_name = "com.amazonaws.${var.region}.s3"
 }
 
-resource "aws_vpc_endpoint_route_table_association" "vpcea-s3" {
+resource "aws_vpc_endpoint_route_table_association" "vpcea-s3pub" {
   vpc_endpoint_id = "${aws_vpc_endpoint.vpce-s3.id}"
   route_table_id  = "${aws_route_table.rt-pub.id}"
+}
+
+resource "aws_vpc_endpoint_route_table_association" "vpcea-s3priv" {
+  count = 1
+  vpc_endpoint_id = "${aws_vpc_endpoint.vpce-s3.id}"
+  route_table_id  = "${element(aws_route_table.rt-priv.*.id, count.index)}"
 }
 
 /* NETWORKS */
@@ -49,7 +55,7 @@ resource "aws_subnet" "sn-pub" {
   availability_zone = "${var.region}${var.zone}"
 
   tags {
-    Name    = "${var.prefix}-public-${count.index}"
+    Name    = "${var.prefix}-public${count.index}"
     project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
@@ -64,7 +70,7 @@ resource "aws_subnet" "sn-priv" {
   availability_zone = "${var.region}${var.zone}"
 
   tags {
-    Name    = "${var.prefix}-private-${count.index}"
+    Name    = "${var.prefix}-private${count.index}"
     project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
@@ -120,15 +126,16 @@ resource "aws_route_table" "rt-pub" {
 }
 
 resource "aws_route_table" "rt-priv" {
+  count  = 1
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = "${aws_nat_gateway.ngw-priv.id}"
+    nat_gateway_id = "${element(aws_nat_gateway.ngw-priv.*.id, count.index)}"
   }
 
   tags {
-    Name    = "${var.prefix}-custom"
+    Name    = "${var.prefix}-custom${count.index}"
     project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
@@ -139,4 +146,10 @@ resource "aws_route_table" "rt-priv" {
 resource "aws_route_table_association" "rta-pub" {
   subnet_id      = "${aws_subnet.sn-pub.id}"
   route_table_id = "${aws_route_table.rt-pub.id}"
+}
+
+resource "aws_route_table_association" "rta-priv" {
+  count = 1
+  subnet_id      = "${element(aws_subnet.sn-priv.*.id, count.index)}"
+  route_table_id = "${element(aws_route_table.rt-priv.*.id, count.index)}"
 }
