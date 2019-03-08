@@ -6,6 +6,7 @@ resource "aws_vpc" "vpc-main" {
 
   tags {
     Name    = "${var.prefix}"
+    project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
   }
@@ -17,6 +18,7 @@ resource "aws_vpc_dhcp_options" "dhcpopts" {
 
   tags {
     Name    = "${var.prefix}"
+    project = "${var.prefix}"
     stage   = "${var.stage}"
     creator = "Terraform"
   }
@@ -64,15 +66,31 @@ resource "aws_security_group" "sg-vpce" {
 
 /* NETWORKS */
 resource "aws_subnet" "sn-pub" {
-  count = 1
+  count  = 1
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   cidr_block        = "${cidrsubnet(var.vpc_cidr, 8 , count.index)}"
   availability_zone = "${var.region}${var.zone}"
 
   tags {
-    Name  = "${var.prefix}-public1"
-    stage = "${var.stage}"
+    Name    = "${var.prefix}-public-${count.index}"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
+    creator = "Terraform"
+  }
+}
+
+resource "aws_subnet" "sn-priv" {
+  count  = 1
+  vpc_id = "${aws_vpc.vpc-main.id}"
+
+  cidr_block        = "${cidrsubnet(var.vpc_cidr, 8 , 128+count.index)}"
+  availability_zone = "${var.region}${var.zone}"
+
+  tags {
+    Name    = "${var.prefix}-private-${count.index}"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
     creator = "Terraform"
   }
 }
@@ -82,11 +100,33 @@ resource "aws_internet_gateway" "igw-main" {
   vpc_id = "${aws_vpc.vpc-main.id}"
 
   tags {
-    Name  = "igw-${var.prefix}"
-    stage = "${var.stage}"
+    Name    = "igw-${var.prefix}"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
     creator = "Terraform"
   }
 }
+
+resource "aws_eip" "eip-ngw" {
+  count = "${var.az_count}"
+  vpc = true
+  depends_on = ["aws_internet_gateway.igw-main"]
+}
+
+resource "aws_nat_gateway" "ngw-priv" {
+  count = 1
+  allocation_id = "${element(aws_eip.eip-ngw.*.id, count.index)}"
+  subnet_id     = "${element(aws_subnet.sn-priv.*.id, count.index)}"
+
+  tags {
+    Name = "NATgw${count.index+1}"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
+    creator = "Terraform"
+  }
+}
+
+resource "" "" {}
 
 /* ROUTE TABLEs */
 resource "aws_route_table" "rt-pub" {
@@ -98,8 +138,25 @@ resource "aws_route_table" "rt-pub" {
   }
 
   tags {
-    Name = "${var.prefix}-custom"
-    stage = "${var.stage}"
+    Name    = "${var.prefix}-custom"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
+    creator = "Terraform"
+  }
+}
+
+resource "aws_route_table" "rt-priv" {
+  vpc_id = "${aws_vpc.vpc-main.id}"
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = "${aws_nat_gateway.ngw-priv.id}"
+  }
+
+  tags {
+    Name    = "${var.prefix}-custom"
+    project = "${var.prefix}"
+    stage   = "${var.stage}"
     creator = "Terraform"
   }
 }
