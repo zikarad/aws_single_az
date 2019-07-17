@@ -29,6 +29,11 @@ variable "s3-bucket-name" {
   default     = "single-az-project"
 }
 
+/* !!! public open port !!! */
+
+variable "add_tcp_ports" { default = [] }
+variable "add_udp_ports" { default = [] }
+
 variable "host-size"       { default = "t3.medium" }
 variable "spot-price"      { default = "0.03" }
 variable "root-block-size" { default = "10" }

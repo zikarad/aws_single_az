@@ -55,6 +55,51 @@ resource "aws_security_group" "sg-host" {
     Name = "sg-host"
     project = "${var.prefix}"
     creator = "Terraform"
+    stage   = "${var.stage}"
+  }
+}
+
+resource "aws_security_group" "sg-tcp-custom" {
+  count = "${length(var.add_tcp_ports)}"
+
+  name = "Custom TCP"
+  description = "Additional TCP ports"
+
+  ingress {
+    description = "port-${var.add_tcp_ports[count.index]}"
+    from_port   = "${var.add_tcp_ports[count.index]}"
+    to_port     = "${var.add_tcp_ports[count.index]}"
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "sg-tcp-custom-${var.add_tcp_ports[count.index]}"
+    project = "${var.prefix}"
+    creator = "Terraform"
+    stage   = "${var.stage}"
+  }
+}
+
+resource "aws_security_group" "sg-udp-custom" {
+  count = "${length(var.add_udp_ports)}"
+
+  name = "Custom UDP"
+  description = "Additional UDP ports"
+
+  ingress {
+    description = "port-${var.add_udp_ports[count.index]}"
+    from_port   = "${var.add_udp_ports[count.index]}"
+    to_port     = "${var.add_udp_ports[count.index]}"
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "sg-udp-custom-${var.add_udp_ports[count.index]}"
+    project = "${var.prefix}"
+    creator = "Terraform"
+    stage   = "${var.stage}"
   }
 }
 
