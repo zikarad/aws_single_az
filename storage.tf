@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "ec2-s3-single_bucket-attach" {
 
   count  = "${var.s3-install ? 1 : 0 }"
 
-  role       = "${aws_iam_role.iamr-ec2.name}"
+  role       = "${data.aws_iam_role.iamr-ec2.name}"
   policy_arn = "${aws_iam_policy.s3-policy.arn}"
 }
 

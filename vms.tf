@@ -12,7 +12,7 @@ resource "aws_key_pair" "sshkey-gen" {
 
 resource "aws_iam_instance_profile" "ec2-profile" {
   name = "ec2-custom"
-  role = "${aws_iam_role.iamr-ec2.name}"
+  role = "${data.aws_iam_role.iamr-ec2.name}"
 }
 
 resource "aws_security_group" "sg-host" {
@@ -173,6 +173,10 @@ resource "aws_acm_certificate_validation" "cert_val" {
 }
 
 /* OUTPUT IP */
+output "dnsnames" {
+	value = ["${aws_route53_record.arecord-pub.*.name}"]
+}
+
 output "public_ip" {
 	value = ["${aws_spot_instance_request.vm-host.*.public_ip}"]
 }

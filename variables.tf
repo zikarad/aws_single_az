@@ -11,8 +11,8 @@ variable "amis" {
 	
 	default = {
 		# Custom AMIs distributed worldwide
-		us-east-1    = "ami-07d9437642ef0e0aa"
-		eu-central-1 = "ami-09ce561921dbd67f5"
+		us-east-1    = "ami-0f858d18571c58988"
+		eu-central-1 = "ami-087c40c87064e2b30"
 	}
 }
 variable "region" { default = "eu-central-1" }
