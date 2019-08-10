@@ -10,9 +10,29 @@ resource "aws_key_pair" "sshkey-gen" {
   public_key = "${file("${var.sshkey_path}")}"
 }
 
+resource "aws_iam_role" "iamr-ec2" {
+	name  = "ec2instance-${var.prefix}"
+	assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": { 
+        "Service": "ec2.amazonaws.com" 
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+POLICY
+
+}
+
 resource "aws_iam_instance_profile" "ec2-profile" {
-  name = "ec2-custom"
-  role = "${data.aws_iam_role.iamr-ec2.name}"
+  name = "ec2-${var.prefix}"
+  role = "${aws_iam_role.iamr-ec2.name}"
 }
 
 resource "aws_security_group" "sg-host" {
@@ -149,30 +169,26 @@ resource "aws_route53_record" "arecord-priv" {
   records = ["${element(aws_spot_instance_request.vm-host.*.private_ip, count.index)}"]
 }
 
-resource "aws_acm_certificate" "cert" {
-  domain_name       = "${var.domain_name}"
-  validation_method = "DNS"
-}
+#resource "aws_acm_certificate" "cert" {
+#  domain_name       = "${var.domain_name}"
+#  validation_method = "DNS"
+#}
 
-data "aws_route53_zone" "zone" {
-  name         = "${var.domain_name}."
-  private_zone = "false"
-}
+#resource "aws_route53_record" "cert_validation" {
+#  name    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_name}"
+#  type    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_type}"
+#  zone_id = "${data.aws_route53_zone.r53zone.id}"
+#  records = ["${aws_acm_certificate.cert.domain_validation_options.0.resource_record_value}"]
+#  ttl     = 60
+#}
 
-resource "aws_route53_record" "cert_validation" {
-  name    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_name}"
-  type    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_type}"
-  zone_id = "${data.aws_route53_zone.zone.id}"
-  records = ["${aws_acm_certificate.cert.domain_validation_options.0.resource_record_value}"]
-  ttl     = 60
-}
-
-resource "aws_acm_certificate_validation" "cert_val" {
-  certificate_arn         = "${aws_acm_certificate.cert.arn}"
-  validation_record_fqdns = ["${aws_route53_record.cert_validation.fqdn}"]
-}
+#resource "aws_acm_certificate_validation" "cert_val" {
+#  certificate_arn         = "${aws_acm_certificate.cert.arn}"
+#  validation_record_fqdns = ["${aws_route53_record.cert_validation.fqdn}"]
+#}
 
 /* OUTPUT IP */
+
 output "dnsnames" {
 	value = ["${aws_route53_record.arecord-pub.*.name}"]
 }
