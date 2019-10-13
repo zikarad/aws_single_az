@@ -8,11 +8,11 @@ variable "vpc_cidr" { default = "10.0.0.0/16"}
 /* AWS */
 variable "amis" {
 	type = "map"
-	
+
 	default = {
 		# Custom AMIs distributed worldwide
-		us-east-1    = "ami-01ed41eeb6116a387"
-		eu-central-1 = "ami-01f7ba1cd1d4b4a61"
+                eu-central-1: "ami-077c0308fba3bc548"
+                us-east-1: "ami-080a4cc6f658ef9e4"
 	}
 }
 variable "region" { default = "eu-central-1" }

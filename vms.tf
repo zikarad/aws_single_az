@@ -144,7 +144,7 @@ resource "aws_spot_instance_request" "vm-host" {
   iam_instance_profile   = "${aws_iam_instance_profile.ec2-profile.name}"
 
   tags {
-    Name  = "host-${count.index+1}"
+    Name  = "${var.prefix}-${count.index+1}"
     project = "${var.prefix}"
     creator = "Terraform"
     stage = "${var.stage}"
@@ -154,7 +154,7 @@ resource "aws_spot_instance_request" "vm-host" {
 resource "aws_route53_record" "arecord-pub" {
   count   = "${var.hostcount}"
   zone_id = "${data.aws_route53_zone.r53zone.zone_id}"
-  name    = "host-${count.index+1}"
+  name    = "${var.prefix}-${count.index+1}"
   type    = "A"
   ttl     = 300
   records = ["${element(aws_spot_instance_request.vm-host.*.public_ip, count.index)}"]
