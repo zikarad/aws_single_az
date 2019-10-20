@@ -9,3 +9,4 @@ single az environment features:
 - Route53 record, cert. val. record
 - option to add tcp/udp open port
   e.g. for WireGuard access add 5744
+- added VPC Flow-log

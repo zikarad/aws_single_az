@@ -34,3 +34,15 @@ resource "aws_cloudwatch_log_stream" "cwlog-stream" {
   name           = "generic-log"
   log_group_name = "${aws_cloudwatch_log_group.cwlog.name}"
 }
+
+resource "aws_cloudwatch_log_group" "vpc-flow-log" {
+  name = "flow-log_${aws_vpc.vpc-main.id}"
+}
+
+resource "aws_flow_log" "flow_log" {
+  iam_role_arn    = "${aws_iam_role.flow-log.arn}"
+  log_group_name  = "${aws_cloudwatch_log_group.vpc-flow-log.name}"
+/*  traffic_type    = "ALL" */
+  traffic_type    = "ACCEPT"
+  vpc_id          = "${aws_vpc.vpc-main.id}"
+}
