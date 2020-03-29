@@ -64,7 +64,7 @@ resource "aws_spot_instance_request" "vm-host" {
   spot_price    = "${var.spot-price}"
   wait_for_fulfillment   = true
 
-  ami           = "${var.ami}"
+  ami           = "${lookup(var.amis, var.region)}"
   instance_type = "${var.host-size}"
 
   root_block_device {

@@ -6,9 +6,13 @@ variable "stage"  { default = "poc"}
 variable "vpc_cidr" { default = "10.0.0.0/16"}
 
 /* AWS */
-variable "ami" {
-  # EU-CENTRAL-1 => CentOS 7
-  default = "ami-0a84197c3325910a9"
+variable "amis" {
+  type = "map"
+  default = {
+  /* Custom AMIs distributed worldwide */
+    "eu-central-1" = "ami-077c0308fba3bc548"
+    "us-east-1" = "ami-080a4cc6f658ef9e4"
+  }
 }
 
 variable "region" { default = "eu-central-1" }
