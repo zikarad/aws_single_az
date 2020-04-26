@@ -23,6 +23,7 @@ variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "route53zone"    {}
 variable "s3-install" { default = "0" }
+variable "cw-install" { default = "0" }
 variable "s3-bucket-name" {
   description = "Common bucket for the project"
   default     = "single-az-project"
