@@ -4,7 +4,7 @@ single az environment features:
 - custom AMIs in 'eu-central-1' and 'us-east-1'
 - custom port (security group) can be defined - sg not assigned
 - S3 endpoint, bucket, role, profile
-- conditionaly build: bucket
+- conditionaly build: bucket, Cloudwatch
 - variable count (def. 1) spot EC2 instances + public IP
 - AWS ACM certificate
 - Route53 record, cert. val. record
