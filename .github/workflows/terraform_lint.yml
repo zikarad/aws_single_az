@@ -1,0 +1,10 @@
+name: CI workflow
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Terraform lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Terraform-Lint
+        uses: actionshub/terraform-lint@1.0.0
