@@ -6,6 +6,6 @@ single az environment features:
 - S3 endpoint, bucket, role, profile
 - conditionaly build: bucket, Cloudwatch
 - variable count (def. 1) spot EC2 instances + public IP
-- AWS ACM certificate
-- Route53 record, cert. val. record
+- conditionaly build: AWS ACM certificate, cert. val. record
+- Route53 record(s)
 - CloudWatch logging
