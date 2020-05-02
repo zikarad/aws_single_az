@@ -1,5 +1,5 @@
 resource "aws_iam_role" "iamr-ec2" {
-  name  = "ec2instance"
+  name = "ec2instance"
 
   assume_role_policy = <<POLICY
 {
@@ -16,5 +16,4 @@ resource "aws_iam_role" "iamr-ec2" {
   ]
 }
 POLICY
-
 }

@@ -16,12 +16,12 @@ resource "aws_iam_instance_profile" "ec2-profile" {
 }
 
 resource "aws_security_group" "sg-host" {
-  name   = "ssh access"
+  name        = "ssh access"
   description = "Allow ssh access from any"
-  vpc_id = "${aws_vpc.vpc-main.id}"
+  vpc_id      = "${aws_vpc.vpc-main.id}"
 
   ingress {
-	description = "SSH from any"
+    description = "SSH from any"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -32,7 +32,7 @@ resource "aws_security_group" "sg-host" {
     description = "HTTP"
     from_port   = 80
     to_port     = 80
-    protocol    =  "tcp"
+    protocol    = "tcp"
     cidr_blocks = ["${var.vpc_cidr}"]
   }
 
@@ -40,7 +40,7 @@ resource "aws_security_group" "sg-host" {
     description = "HTTPS"
     from_port   = 443
     to_port     = 443
-    protocol    =  "tcp"
+    protocol    = "tcp"
     cidr_blocks = ["${var.vpc_cidr}"]
   }
 
@@ -52,7 +52,7 @@ resource "aws_security_group" "sg-host" {
   }
 
   tags {
-    Name = "sg-host"
+    Name    = "sg-host"
     project = "${var.prefix}"
     creator = "Terraform"
     stage   = "${var.stage}"
@@ -62,7 +62,7 @@ resource "aws_security_group" "sg-host" {
 resource "aws_security_group" "sg-tcp-custom" {
   count = "${length(var.add_tcp_ports)}"
 
-  name = "Custom TCP"
+  name        = "Custom TCP"
   description = "Additional TCP ports"
 
   ingress {
@@ -74,7 +74,7 @@ resource "aws_security_group" "sg-tcp-custom" {
   }
 
   tags {
-    Name = "sg-tcp-custom-${var.add_tcp_ports[count.index]}"
+    Name    = "sg-tcp-custom-${var.add_tcp_ports[count.index]}"
     project = "${var.prefix}"
     creator = "Terraform"
     stage   = "${var.stage}"
@@ -84,7 +84,7 @@ resource "aws_security_group" "sg-tcp-custom" {
 resource "aws_security_group" "sg-udp-custom" {
   count = "${length(var.add_udp_ports)}"
 
-  name = "Custom UDP"
+  name        = "Custom UDP"
   description = "Additional UDP ports"
 
   ingress {
@@ -96,7 +96,7 @@ resource "aws_security_group" "sg-udp-custom" {
   }
 
   tags {
-    Name = "sg-udp-custom-${var.add_udp_ports[count.index]}"
+    Name    = "sg-udp-custom-${var.add_udp_ports[count.index]}"
     project = "${var.prefix}"
     creator = "Terraform"
     stage   = "${var.stage}"
@@ -104,30 +104,30 @@ resource "aws_security_group" "sg-udp-custom" {
 }
 
 resource "aws_spot_instance_request" "vm-host" {
-  count         = "${var.hostcount}"
+  count = "${var.hostcount}"
 
-  spot_price    = "${var.spot-price}"
-  wait_for_fulfillment   = true
+  spot_price           = "${var.spot-price}"
+  wait_for_fulfillment = true
 
   ami           = "${lookup(var.amis, var.region)}"
   instance_type = "${var.host-size}"
 
   root_block_device {
-    volume_size = "${var.root-block-size}"
+    volume_size           = "${var.root-block-size}"
     delete_on_termination = true
   }
 
-  subnet_id              = "${aws_subnet.sn-pub.id}"
-  vpc_security_group_ids = ["${aws_security_group.sg-host.id}"]
-  key_name               = "${aws_key_pair.sshkey-gen.key_name}"
+  subnet_id                   = "${aws_subnet.sn-pub.id}"
+  vpc_security_group_ids      = ["${aws_security_group.sg-host.id}"]
+  key_name                    = "${aws_key_pair.sshkey-gen.key_name}"
   associate_public_ip_address = true
-  iam_instance_profile   = "${aws_iam_instance_profile.ec2-profile.name}"
+  iam_instance_profile        = "${aws_iam_instance_profile.ec2-profile.name}"
 
   tags {
-    Name  = "${var.prefix}-host${count.index+1}"
+    Name    = "${var.prefix}-host${count.index+1}"
     project = "${var.prefix}"
     creator = "Terraform"
-    stage = "${var.stage}"
+    stage   = "${var.stage}"
   }
 }
 
@@ -150,7 +150,7 @@ resource "aws_route53_record" "arecord-priv" {
 }
 
 resource "aws_acm_certificate" "cert" {
-  count = "${var.acm-install ? 1 : 0}" 
+  count             = "${var.acm-install ? 1 : 0}"
   domain_name       = "${var.domain_name}"
   validation_method = "DNS"
 }
@@ -161,7 +161,7 @@ data "aws_route53_zone" "zone" {
 }
 
 resource "aws_route53_record" "cert_validation" {
-  count = "${var.acm-install ? 1 : 0}" 
+  count   = "${var.acm-install ? 1 : 0}"
   name    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_name}"
   type    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_type}"
   zone_id = "${data.aws_route53_zone.zone.id}"
@@ -170,12 +170,12 @@ resource "aws_route53_record" "cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "cert_val" {
-  count = "${var.acm-install ? 1 : 0}" 
+  count                   = "${var.acm-install ? 1 : 0}"
   certificate_arn         = "${aws_acm_certificate.cert.arn}"
   validation_record_fqdns = ["${aws_route53_record.cert_validation.fqdn}"]
 }
 
 /* OUTPUT IP */
 output "public_ip" {
-	value = ["${aws_spot_instance_request.vm-host.*.public_ip}"]
+  value = ["${aws_spot_instance_request.vm-host.*.public_ip}"]
 }
